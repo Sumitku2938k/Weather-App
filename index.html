@@ -2,34 +2,65 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#667eea">
+    <title>Weather App - Beautiful & Modern</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="card">
         <div class="search">
-            <input type="text" placeholder="Enter City Name" spellcheck="false">
-            <button id="btn"><img src="search.png"></button>
+            <input type="text" placeholder="Enter City Name" spellcheck="false" id="searchInput">
+            <button id="btn"><img src="search.png" alt="Search"></button>
         </div>
-        <div class="weather">
-            <img src="clear.png" class="weather-icon">
+        
+        <div class="loading" id="loading">
+            <span>Loading weather data...</span>
+        </div>
+        
+        <div class="error" id="error">
+            <span>City not found. Please try again.</span>
+        </div>
+        
+        <div class="weather" id="weather">
+            <img src="clear.png" class="weather-icon" alt="Weather Icon">
             <h1 class="temp">22°C</h1>
             <h2 class="city">Zaragoza</h2>
+            <p class="weather-description">Clear Sky</p>
+            
             <div class="details">
                 <div class="col">
-                    <img src="humidity.png">
+                    <img src="humidity.png" alt="Humidity">
                     <div>
                         <p class="humidity">50%</p>
                         <p>Humidity</p>
                     </div>
                 </div>
                 <div class="col">
-                    <img src="wind.png">
+                    <img src="wind.png" alt="Wind">
                     <div>
                         <p class="wind">15 km/h</p>
                         <p>Wind Speed</p>
                     </div>
+                </div>
+            </div>
+            
+            <div class="weather-info">
+                <div class="weather-info-item">
+                    <h3>Feels Like</h3>
+                    <p class="feels-like">24°C</p>
+                </div>
+                <div class="weather-info-item">
+                    <h3>Pressure</h3>
+                    <p class="pressure">1013 hPa</p>
+                </div>
+                <div class="weather-info-item">
+                    <h3>Visibility</h3>
+                    <p class="visibility">10 km</p>
                 </div>
             </div>
         </div>
