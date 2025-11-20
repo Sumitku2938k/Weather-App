@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Simple Weather App</title>
+  <style>
+    :root{--bg:#000000;--card:#000000;--accent:#60a5fa;--muted:#93c5fd}
+    *{box-sizing:border-box}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;min-height:100vh;background:linear-gradient(180deg,#000000 0%,#04192b 60%);color:#e6eef8;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{width:100%;max-width:720px;background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));border-radius:12px;padding:20px;box-shadow:0 10px 30px rgba(52, 57, 83, 0.6)}
+    header{display:flex;flex-direction:column;align-items:stretch;gap:10px;margin-bottom:14px}
+    h1{font-size:20px;margin:0;text-align:center}
+    .controls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+    input[type=text]{flex:1;min-width:180px;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.6);background:transparent;color:inherit;outline:none}
+    button{padding:10px 12px;border-radius:8px;border:none;background:var(--accent);color:#05233b;font-weight:600;cursor:pointer;flex-shrink:0}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+    .main{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+    .left{flex:1}
+    .temp{font-size:62px;font-weight:700;line-height:1;margin:0}
+    .desc{font-size:16px;margin:6px 0;color:rgba(230,238,248,0.85)}
+    .meta{display:flex;flex-wrap:wrap;gap:12px;color:rgba(230,238,248,0.75);font-size:14px}
+    .icon{width:140px;height:140px;display:flex;align-items:center;justify-content:center;margin:auto}
+    .small{font-size:13px;color:rgba(230,238,248,0.7)}
+    footer{margin-top:14px;color:rgba(230,238,248,0.6);font-size:13px;text-align:right;}
+    .error{background:#3b0f0f;color:#ffd5d5;padding:10px;border-radius:8px;margin-bottom:10px;text-align:center}
+
+    @media (max-width:640px){
+      body{padding:12px}
+      .card{padding:16px}
+      header{gap:8px}
+      .controls{flex-direction:column;align-items:stretch}
+      input[type=text],button{width:100%}
+      .main{flex-direction:column;align-items:flex-start}
+      .icon{width:100px;height:100px}
+      .temp{font-size:44px}
+      footer{text-align:center;margin-top:20px}
+    }
+  </style>
+</head>
+<body>
+  <div class="card" role="application" aria-label="Weather app">
+    <header>
+      <h1>Weather — Current</h1>
+      <div class="controls">
+        <input id="cityInput" type="text" placeholder="Enter city name (e.g. London)" aria-label="City name" />
+        <button id="searchBtn">Search</button>
+        <button id="geoBtn" class="btn-ghost">Use my location</button>
+      </div>
+    </header>
+
+    <div id="error" style="display:none" class="error" role="alert"></div>
+
+    <main class="main">
+      <div class="left">
+        <p class="small" id="location">—</p>
+        <h2 class="temp" id="temp">--°C</h2>
+        <p class="desc" id="description">Search for a city or use location.</p>
+        <div class="meta">
+          <div id="humidity">Humidity: —</div>
+          <div id="wind">Wind: —</div>
+          <div id="pressure">Pressure: —</div>
+        </div>
+      </div>
+      <div class="icon" id="iconArea">
+        <!-- icon will be injected -->
+      </div>
+    </main>
+
+    <footer>
+      --Project done by Sumit Kumar.
+    </footer>
+  </div>
+
+  <script>
+    const API_KEY = 'a92996d384b1f70f6f484581b4590626';
+    const BASE = 'https://api.openweathermap.org/data/2.5/weather';
+
+    const cityInput = document.getElementById('cityInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const geoBtn = document.getElementById('geoBtn');
+    const tempEl = document.getElementById('temp');
+    const descEl = document.getElementById('description');
+    const locEl = document.getElementById('location');
+    const humidityEl = document.getElementById('humidity');
+    const windEl = document.getElementById('wind');
+    const pressureEl = document.getElementById('pressure');
+    const iconArea = document.getElementById('iconArea');
+    const errorBox = document.getElementById('error');
+
+    function showError(msg){ errorBox.style.display='block'; errorBox.textContent=msg; }
+    function hideError(){ errorBox.style.display='none'; errorBox.textContent=''; }
+
+    async function fetchWeatherByCity(city){
+      if(!API_KEY || API_KEY==='YOUR_API_KEY'){ showError('No API key set. Get a free key from OpenWeatherMap and replace API_KEY in the file.'); return; }
+      hideError();
+      try{
+        const url = `${BASE}?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=metric`;
+        const res = await fetch(url);
+        if(!res.ok){
+          if(res.status===404) throw new Error('City not found.');
+          throw new Error('Failed to fetch weather — network or API error.');
+        }
+        const data = await res.json();
+        renderWeather(data);
+      }catch(err){ showError(err.message); }
+    }
+
+    async function fetchWeatherByCoords(lat, lon){
+      if(!API_KEY || API_KEY==='YOUR_API_KEY'){ showError('No API key set.'); return; }
+      hideError();
+      try{
+        const url = `${BASE}?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
+        const res = await fetch(url);
+        if(!res.ok) throw new Error('Failed to fetch weather for your location.');
+        const data = await res.json();
+        renderWeather(data);
+      }catch(err){ showError(err.message); }
+    }
+
+    function renderWeather(data){
+      const name = data.name || '';
+      const country = data.sys && data.sys.country ? `, ${data.sys.country}` : '';
+      locEl.textContent = `${name}${country}`;
+      tempEl.textContent = `${Math.round(data.main.temp)}°C`;
+      descEl.textContent = `${capitalize(data.weather[0].description)} — feels like ${Math.round(data.main.feels_like)}°C`;
+      humidityEl.textContent = `Humidity: ${data.main.humidity}%`;
+      windEl.textContent = `Wind: ${data.wind.speed} m/s`;
+      pressureEl.textContent = `Pressure: ${data.main.pressure} hPa`;
+      const iconCode = data.weather[0].icon;
+      iconArea.innerHTML = `<img src="https://openweathermap.org/img/wn/${iconCode}@2x.png" alt="${data.weather[0].description}" width="120" height="120" />`;
+    }
+
+    function capitalize(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+    searchBtn.addEventListener('click', ()=>{
+      const city = cityInput.value.trim();
+      if(!city){ showError('Please type a city name.'); return; }
+      fetchWeatherByCity(city);
+    });
+
+    cityInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') searchBtn.click(); });
+
+    geoBtn.addEventListener('click', ()=>{
+      hideError();
+      if(!navigator.geolocation){ showError('Geolocation not supported by your browser.'); return; }
+      navigator.geolocation.getCurrentPosition((pos)=>{
+        fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude);
+      }, (err)=>{
+        showError('Unable to get your location. Please allow location access or try searching by city.');
+      });
+    });
+  </script>
+</body>
+</html>
